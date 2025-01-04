@@ -2,6 +2,7 @@
 
 import useLoginModal from "@/hooks/useLoginModal";
 import useRegisterModal from "@/hooks/useRegisterModal";
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useCallback } from "react";
 import { AiFillGithub as GithubIcon } from "react-icons/ai";
@@ -13,6 +14,9 @@ import Button from "../ui/button";
 export default function Auth() {
   const registerModal = useRegisterModal();
   const loginModal = useLoginModal();
+
+  const { data } = useSession();
+  console.log(data);
 
   const onOpenRegisterModal = useCallback(() => {
     registerModal.onOpen();
@@ -44,6 +48,7 @@ export default function Auth() {
             <h2 className="font-bold text-3xl mb-4">Join today.</h2>
             <div className="flex flex-col space-y-2">
               <Button
+                onClick={() => signIn("google")}
                 label={
                   <div className="flex gap-2  items-center justify-center">
                     <GoogleIcon />
@@ -54,6 +59,7 @@ export default function Auth() {
                 secondary
               />
               <Button
+                onClick={() => signIn("github")}
                 label={
                   <div className="flex gap-2  items-center justify-center">
                     <GithubIcon />

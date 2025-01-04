@@ -4,6 +4,7 @@ import useRegisterModal from "@/hooks/useRegisterModal";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { AlertCircle } from "lucide-react";
+import { signIn } from "next-auth/react";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -164,6 +165,11 @@ function RegisterStep2({ data }: { data: { name: string; email: string } }) {
       });
 
       if (response.success) {
+        signIn("credentials", {
+          email: data.email,
+          password: values.password
+        });
+
         registerModal.onClose();
       }
     } catch (error: any) {
