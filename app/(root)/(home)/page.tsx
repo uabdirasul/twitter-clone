@@ -1,18 +1,55 @@
+"use client";
 import Form from "@/components/shared/form";
 import Header from "@/components/shared/header";
-import { authOptions } from "@/lib/auth-options";
-import { getServerSession } from "next-auth";
+import PostItem from "@/components/shared/post-item";
+import { IPost } from "@/types";
+import axios from "axios";
+import { Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
-export default async function page() {
-  const session: any = await getServerSession(authOptions);
+export default function Page() {
+  const { data: session, status }: any = useSession();
+  const [isLoading, setIsLoading] = useState(false);
+  const [posts, setPosts] = useState<IPost[]>([]);
+
+  useEffect(() => {
+    const getPosts = async () => {
+      try {
+        setIsLoading(true);
+        const { data } = await axios.get("/api/posts?limit=10");
+        setPosts(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.log(error);
+        setIsLoading(false);
+      }
+    };
+    getPosts();
+  }, []);
 
   return (
     <>
       <Header label="Home" isBack />
-      <Form
-        placeholder="Write something..."
-        user={JSON.parse(JSON.stringify(session?.currentUser))}
-      />
+      {isLoading || status === "loading" ? (
+        <div className="flex justify-center items-center h-24">
+          <Loader2 className="animate-spin text-sky-500" />
+        </div>
+      ) : (
+        <>
+          <Form
+            placeholder="Write something..."
+            user={JSON.parse(JSON.stringify(session?.currentUser))}
+          />
+          {posts.map((post) => (
+            <PostItem
+              key={post._id}
+              post={post}
+              user={JSON.parse(JSON.stringify(session?.currentUser))}
+            />
+          ))}
+        </>
+      )}
     </>
   );
 }
