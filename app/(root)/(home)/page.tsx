@@ -40,12 +40,14 @@ export default function Page() {
           <Form
             placeholder="Write something..."
             user={JSON.parse(JSON.stringify(session?.currentUser))}
+            setPosts={setPosts}
           />
           {posts.map((post) => (
             <PostItem
               key={post._id}
               post={post}
               user={JSON.parse(JSON.stringify(session?.currentUser))}
+              setPosts={setPosts}
             />
           ))}
         </>

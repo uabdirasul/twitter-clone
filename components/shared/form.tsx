@@ -1,18 +1,19 @@
 "use client";
 
 import { toast } from "@/hooks/use-toast";
-import { User as IUser } from "@/types";
+import { IPost, User as IUser } from "@/types";
 import axios from "axios";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Button from "../ui/button";
 
 interface Props {
   placeholder: string;
   user: IUser;
+  setPosts: Dispatch<SetStateAction<IPost[]>>;
 }
 
-const Form = ({ placeholder, user }: Props) => {
+const Form = ({ placeholder, user, setPosts }: Props) => {
   const [body, setBody] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -23,7 +24,10 @@ const Form = ({ placeholder, user }: Props) => {
         body,
         userId: user?._id
       });
-      console.log(data);
+
+      const newPost = { ...data, user };
+      setPosts((prev) => [newPost, ...prev]);
+
       toast({
         title: "Success",
         description: "Your post has been published."
