@@ -25,7 +25,7 @@ const Form = ({ placeholder, user, setPosts }: Props) => {
         userId: user?._id
       });
 
-      const newPost = { ...data, user };
+      const newPost = { ...data, user, likes: 0, hasLiked: false, comments: 0 };
       setPosts((prev) => [newPost, ...prev]);
 
       toast({

@@ -18,6 +18,7 @@ interface Props {
 
 const PostItem = ({ post, user, setPosts }: Props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const onDelete = async () => {
     setIsLoading(true);
     try {
@@ -38,6 +39,55 @@ const PostItem = ({ post, user, setPosts }: Props) => {
       });
     }
   };
+
+  const onLike = async () => {
+    try {
+      setIsLoading(true);
+      if (post?.hasLiked) {
+        await axios.delete("/api/likes", {
+          data: {
+            postId: post._id,
+            userId: user._id
+          }
+        });
+
+        const updatedPosts = {
+          ...post,
+          hasLiked: false,
+          likes: post?.likes - 1
+        };
+
+        setPosts((prev) =>
+          prev.map((p) => (p._id === post._id ? updatedPosts : p))
+        );
+      } else {
+        await axios.put("/api/likes", {
+          postId: post._id,
+          userId: user._id
+        });
+
+        const updatedPosts = {
+          ...post,
+          hasLiked: true,
+          likes: post?.likes + 1
+        };
+
+        setPosts((prev) =>
+          prev.map((p) => (p._id === post._id ? updatedPosts : p))
+        );
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+      return toast({
+        title: "Error",
+        description: "Something went wrong. Please try again later.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="border-b-[1px] border-neutral-800 p-5 cursor-pointer hover:bg-neutral-900 transition relative">
       {isLoading && (
@@ -71,12 +121,18 @@ const PostItem = ({ post, user, setPosts }: Props) => {
           <div className="flex flex-row items-center mt-3 gap-10">
             <div className="flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-sky-500">
               <AiOutlineMessage size={20} />
-              <p>{post?.comments?.length || 0}</p>
+              <p>{post?.comments || 0}</p>
             </div>
 
-            <div className="flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-red-500">
-              <Heart size={20} />
-              <p>{post?.likes?.length || 0}</p>
+            <div
+              className="flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-red-500"
+              onClick={onLike}
+            >
+              <Heart
+                size={20}
+                {...(post?.hasLiked && { className: "text-red-500" })}
+              />
+              <p>{post.likes || 0}</p>
             </div>
 
             {post?.user?._id === user?._id && (

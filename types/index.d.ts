@@ -18,10 +18,11 @@ export interface User {
 
 export interface IPost {
   body: string;
-  comments: string[];
+  comments: number;
   createdAt: string;
-  likes: string[];
+  likes: number;
   updatedAt: string;
   user: User;
   _id: string;
+  hasLiked: boolean;
 }
