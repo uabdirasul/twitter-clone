@@ -6,6 +6,7 @@ import { IPost, User as IUser } from "@/types";
 import axios from "axios";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Heart, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { AiFillDelete, AiOutlineMessage } from "react-icons/ai";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -19,7 +20,10 @@ interface Props {
 const PostItem = ({ post, user, setPosts }: Props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const onDelete = async () => {
+  const router = useRouter();
+
+  const onDelete = async (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
     setIsLoading(true);
     try {
       await axios.delete(`/api/posts`, {
@@ -40,7 +44,9 @@ const PostItem = ({ post, user, setPosts }: Props) => {
     }
   };
 
-  const onLike = async () => {
+  const onLike = async (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+
     try {
       setIsLoading(true);
       if (post?.hasLiked) {
@@ -88,6 +94,10 @@ const PostItem = ({ post, user, setPosts }: Props) => {
     }
   };
 
+  const goToPost = () => {
+    router.push(`/posts/${post?._id}`);
+  };
+
   return (
     <div className="border-b-[1px] border-neutral-800 p-5 cursor-pointer hover:bg-neutral-900 transition relative">
       {isLoading && (
@@ -97,7 +107,10 @@ const PostItem = ({ post, user, setPosts }: Props) => {
           </div>
         </div>
       )}
-      <div className="flex flex-row items-center gap-3">
+      <div
+        className="flex flex-row items-center gap-3 cursor-pointer"
+        onClick={goToPost}
+      >
         <Avatar>
           <AvatarImage src={post.user.profileImage} />
           <AvatarFallback>{post.user.name[0]}</AvatarFallback>
