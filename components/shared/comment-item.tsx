@@ -1,17 +1,86 @@
 "use client";
 import { sliceText } from "@/lib/utils";
 import { IPost } from "@/types";
+import axios from "axios";
 import { formatDistanceToNowStrict } from "date-fns";
-import { Heart } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { User as IUser } from "next-auth";
+import { useState } from "react";
 import { AiFillDelete } from "react-icons/ai";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
-const CommentItem = ({ comment, user }: { comment: IPost; user: IUser }) => {
-  const onLike = async () => {};
-  const onDelete = async () => {};
+interface Props {
+  comment: IPost;
+  user: IUser;
+  setComments: React.Dispatch<React.SetStateAction<IPost[]>>;
+  comments: IPost[];
+}
+
+const CommentItem = ({ comment, user, setComments, comments }: Props) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const onLike = async () => {
+    console.log(comment?.hasLiked);
+    try {
+      setIsLoading(true);
+      if (comment?.hasLiked) {
+        await axios.delete("/api/comments/", {
+          data: {
+            commentId: comment._id
+          }
+        });
+
+        const updatedComments = comments.map((c) => {
+          if (c._id === comment._id) {
+            return { ...c, likes: c.likes - 1, hasLiked: false };
+          }
+          return c;
+        });
+
+        setComments(updatedComments);
+      } else {
+        await axios.put("/api/comments", {
+          data: {
+            commentId: comment._id
+          }
+        });
+
+        const updatedComments = comments.map((c) => {
+          if (c._id === comment._id) {
+            return { ...c, likes: c.likes + 1, hasLiked: true };
+          }
+          return c;
+        });
+
+        setComments(updatedComments);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.log("Error on liking ", error);
+      setIsLoading(false);
+    }
+  };
+
+  const onDelete = async () => {
+    try {
+      setIsLoading(true);
+      await axios.delete(`/api/comments/${comment._id}`);
+      setComments((prev) => prev.filter((c) => c._id !== comment._id));
+      setIsLoading(false);
+    } catch (error) {
+      console.log("Error on deleting ", error);
+      setIsLoading(false);
+    }
+  };
   return (
-    <div className="border-b-[1px] border-neutral-800 p-5 cursor-pointer bg-neutral-900 transition">
+    <div className="border-b-[1px] relative border-neutral-800 p-5 cursor-pointer bg-neutral-900 transition">
+      {isLoading && (
+        <div className="absolute inset-0 w-full h-full bg-black opacity-50">
+          <div className="flex justify-center items-center h-full">
+            <Loader2 className="animate-spin text-sky-500" />
+          </div>
+        </div>
+      )}
       <div className="flex flex-row items-center gap-3">
         <Avatar>
           <AvatarImage src={comment?.user?.profileImage} />

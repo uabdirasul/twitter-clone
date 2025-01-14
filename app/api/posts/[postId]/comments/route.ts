@@ -21,6 +21,9 @@ export async function GET(req: Request, route: { params: { postId: string } }) {
           path: "user",
           model: User,
           select: "name email profileImage _id username"
+        },
+        options: {
+          sort: { likes: -1 }
         }
       })
       .sort({ createdAt: -1 });
